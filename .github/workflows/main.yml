@@ -22,24 +22,24 @@ jobs:
       run: mvn clean install -DskipTest
 
   code-quality:
-    name: Qualidade de Codigo
+    name: Qualidade de Código
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest        
     
     steps:
     - name: Git Checkout
       uses: actions/checkout@v3
-    - name: Adicionando Permissão para o mvnw
+    - name: Adiciona permissão para mvnw
       run: chmod +x mvnw
     - name: Análise SonarCloud
       run: ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=lab-crescer-pipeline
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      
+        
   tests:
-    name: Testes Automatizados
+    name: Testes automatizados
     needs: code-quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
     
     steps:
     - name: Git Checkout
@@ -47,32 +47,34 @@ jobs:
     - name: Configura JDK 11
       uses: actions/setup-java@v3
       with:
-        java-version: "11"
-        distribution: "temurin"
+        java-version: '11'
+        distribution: 'temurin'
         cache: maven
     - name: Testes Unitários
       run: mvn -B test --file pom.xml
       
   push-image:
-    name: Enviando imagem para o DockerHub
+    name: Enviando Imagem para o DockerHub
     needs: tests
     runs-on: ubuntu-latest
-      
+
     steps:
     - name: Login DockerHub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Criação e Envio da Imagem
+        
+    - name: Criação e envio da Imagem
       uses: docker/build-push-action@v4
       with:
+#         context: .
         file: ./Dockerfile
         push: true
         run: |
           export DOCKER_BUILDKIT=0
           export COMPOSE_DOCKER_CLI_BUILD=0
-        tags:
+        tags: |
           ismaelpithan/javacrescer:latest
           
   deploy:
