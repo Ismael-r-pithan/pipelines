@@ -1,26 +1,28 @@
-name: Deploy do Azure ACI
+name: Deploy to Azure Web App
 
 on:
   push:
-    branches: ["main"]
-    
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
   build:
-    name: Compilar
+    name: Compilação
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Git Checkout
       uses: actions/checkout@v3
     - name: Configura JDK 11
       uses: actions/setup-java@v3
       with:
-        java-version: "11"
-        distribution: "temurin"
+        java-version: '11'
+        distribution: 'temurin'
         cache: maven
     - name: Compilação
-      run: mvn clean install -DskipTest
-
+      run: mvn clean install -DskipTests
+      
   code-quality:
     name: Qualidade de Código
     needs: build
@@ -76,29 +78,27 @@ jobs:
           export COMPOSE_DOCKER_CLI_BUILD=0
         tags: |
           ismaelpithan/javacrescer:latest
-          
+  
   deploy:
-    name: Publica App ACI
+    name: Publica Web App     
     needs: push-image
     runs-on: ubuntu-latest
     steps:
-    - name: Login via Azure CLI
+    - name: 'Login via Azure CLI'
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - name: Deploy da nossa aplicação Hello-Java
-      uses: Azure/aci-deploy@v1
+          
+    - name: 'Deploy to Azure Container Instances'
+      uses: 'azure/aci-deploy@v1'
       with:
         resource-group: RG-APPS-CRESCER
-        dns-name-label: lab-crescer-ismael-pithan
+        dns-name-label: labs-crescer-ismael-pithan
         image: ismaelpithan/javacrescer:latest
         cpu: 1
         memory: 1
         registry-login-server: docker.io
         registry-username: ${{ secrets.REGISTRY_USERNAME }}
         registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        name: lab-crescer-ismael-pithan
-        location: "east us"
-      
-      
-       
+        name: labs-crescer-ismael-pithan
+        location: 'east us'
