@@ -28,7 +28,7 @@ jobs:
     
     steps:
     - name: Git Checkout
-      uses: action/checkout@v3
+      uses: actions/checkout@v3
     - name: Adicionando Permissão para o mvnw
       run: chmod +x mvnw
     - name: Análise SonarCloud
